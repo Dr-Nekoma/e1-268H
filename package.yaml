@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/edil
 
 dependencies:
 - base >= 4.7 && < 5
+- vector >= 0.13 && < 0.14
 
 ghc-options:
 - -Wall
@@ -37,7 +38,7 @@ library:
   source-dirs: src
 
 executables:
-  dcpu16-emulator-hs-exe:
+  dcpu16:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -48,7 +49,7 @@ executables:
     - dcpu16-emulator-hs
 
 tests:
-  dcpu16-emulator-hs-test:
+  dcpu16-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
