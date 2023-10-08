@@ -27,6 +27,7 @@ library
   exposed-modules:
       Computer
       DCPU
+      Instruction
       Lib
       Log
       LSMachine
