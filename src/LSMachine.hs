@@ -3,7 +3,7 @@ module LSMachine ( LSMachine (..)
                  ) where
 
 import Data.Word
-import DCPU16
+import DCPU
 
 data Address = Reg Register
              | Ram Word16

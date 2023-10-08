@@ -26,7 +26,7 @@ source-repository head
 library
   exposed-modules:
       Computer
-      DCPU16
+      DCPU
       Lib
       Log
       LSMachine
@@ -38,6 +38,8 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , microlens ==0.4.13.*
+    , microlens-th ==0.4.3.*
     , mtl ==2.2.*
     , vector ==0.13.*
   default-language: Haskell2010
@@ -52,6 +54,8 @@ executable dcpu16
   build-depends:
       base >=4.7 && <5
     , dcpu16-emulator-hs
+    , microlens ==0.4.13.*
+    , microlens-th ==0.4.3.*
     , mtl ==2.2.*
     , vector ==0.13.*
   default-language: Haskell2010
@@ -67,6 +71,8 @@ test-suite dcpu16-test
   build-depends:
       base >=4.7 && <5
     , dcpu16-emulator-hs
+    , microlens ==0.4.13.*
+    , microlens-th ==0.4.3.*
     , mtl ==2.2.*
     , vector ==0.13.*
   default-language: Haskell2010

@@ -1,69 +1,70 @@
-module DCPU16 ( DCPU16
-              , newCpu
-              , loadCPU
-              , storeCPU
-              , Register (..)
-              ) where
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE RankNTypes #-}
+
+module DCPU ( DCPU (..)
+            , newDCPU16
+            , loadCPU
+            , storeCPU
+            , Register (..)
+            ) where
+
+import Lens.Micro.TH
+import Lens.Micro
+import Lens.Micro.Extras (view)
 
 import GHC.Word (Word16 (..))
 import Data.Bits
 
-data DCPU16 = DCPU16 { regA  :: Word16
-                     , regB  :: Word16
-                     , regC  :: Word16
-                     , regX  :: Word16
-                     , regY  :: Word16
-                     , regZ  :: Word16
-                     , regI  :: Word16
-                     , regJ  :: Word16
-                     , regPC :: Word16
-                     , regSP :: Word16
-                     , regO  :: Word16
-                     }
-  deriving (Eq, Show)
+data DCPU a = DCPU { _regA  :: a
+                   , _regB  :: a
+                   , _regC  :: a
+                   , _regX  :: a
+                   , _regY  :: a
+                   , _regZ  :: a
+                   , _regI  :: a
+                   , _regJ  :: a
+                   , _regPC :: a
+                   , _regSP :: a
+                   , _regO  :: a
+                   } deriving (Eq, Show)
 
-newCpu :: DCPU16
-newCpu = DCPU16 { regA  = 0
-                , regB  = 0
-                , regC  = 0
-                , regX  = 0
-                , regY  = 0
-                , regZ  = 0
-                , regI  = 0
-                , regJ  = 0
-                , regPC = 0
-                , regSP = 0xFFFF
-                , regO  = 0
-                }
+$(makeLenses ''DCPU)
+
+newDCPU16 :: DCPU Word16
+newDCPU16 = DCPU { _regA  = 0
+                 , _regB  = 0
+                 , _regC  = 0
+                 , _regX  = 0
+                 , _regY  = 0
+                 , _regZ  = 0
+                 , _regI  = 0
+                 , _regJ  = 0
+                 , _regPC = 0
+                 , _regSP = 0xFFFF
+                 , _regO  = 0
+                 }
 
 data Register = A | B | C | X | Y | Z | I | J | PC | SP | O
   deriving (Show, Eq, Enum, Bounded)
 
-loadCPU :: DCPU16 -> Register -> Word16
-loadCPU cpu A  = regA  cpu
-loadCPU cpu B  = regB  cpu
-loadCPU cpu C  = regC  cpu
-loadCPU cpu X  = regX  cpu
-loadCPU cpu Y  = regY  cpu
-loadCPU cpu Z  = regZ  cpu
-loadCPU cpu I  = regI  cpu
-loadCPU cpu J  = regJ  cpu
-loadCPU cpu PC = regPC cpu
-loadCPU cpu SP = regSP cpu
-loadCPU cpu O  = regO  cpu
+loadCPU :: Register -> DCPU a -> a
+loadCPU reg = view $ regLens reg
 
-storeCPU :: DCPU16 -> Register -> Word16 -> DCPU16
-storeCPU cpu A  dat = cpu { regA  = dat }
-storeCPU cpu B  dat = cpu { regB  = dat }
-storeCPU cpu C  dat = cpu { regC  = dat }
-storeCPU cpu X  dat = cpu { regX  = dat }
-storeCPU cpu Y  dat = cpu { regY  = dat }
-storeCPU cpu Z  dat = cpu { regZ  = dat }
-storeCPU cpu I  dat = cpu { regI  = dat }
-storeCPU cpu J  dat = cpu { regJ  = dat }
-storeCPU cpu PC dat = cpu { regPC = dat }
-storeCPU cpu SP dat = cpu { regSP = dat }
-storeCPU cpu O  dat = cpu { regO  = dat }
+storeCPU :: Register -> a -> DCPU a -> DCPU a
+storeCPU reg = set $ regLens reg
+
+regLens :: Register -> Lens' (DCPU a) a
+regLens A  = regA
+regLens B  = regB
+regLens C  = regC
+regLens X  = regX
+regLens Y  = regY
+regLens Z  = regZ
+regLens I  = regI
+regLens J  = regJ
+regLens PC = regPC
+regLens SP = regSP
+regLens O  = regO
 
 
 

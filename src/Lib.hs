@@ -1,15 +1,17 @@
 module Lib
     ( someFunc
-    , module DCPU16
+    , module DCPU
     , module Memory
     , module LSMachine
     , module Computer
+    , module Log
     ) where
 
-import DCPU16
+import DCPU
 import Memory
 import LSMachine
 import Computer
+import Log
 
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"

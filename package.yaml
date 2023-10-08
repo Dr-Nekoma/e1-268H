@@ -23,6 +23,10 @@ dependencies:
 - base >= 4.7 && < 5
 - vector >= 0.13 && < 0.14
 - mtl >= 2.2 && < 2.3
+- microlens >= 0.4.13 && < 0.4.14
+- microlens-th >= 0.4.3 && < 0.4.4
+# - microlens-mtl >= 0.2.0 && < 0.2.1
+# - microlens-platform >= 0.4.3 && < 0.4.4
 
 ghc-options:
 - -Wall

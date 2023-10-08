@@ -1,6 +1,7 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
+--{-# LANGUAGE LiberalTypeSynonyms #-}
 
 
 module Computer ( Computer
@@ -25,15 +26,15 @@ import Control.Monad.IO.Class (liftIO)
 
 import Debug.Trace
 
-import DCPU16
+import DCPU
 import Memory
 import LSMachine
 
-data Computer s = Computer { dcpu :: DCPU16
+data Computer s = Computer { dcpu :: DCPU Word16
                            , dmemory :: Memory s
                            }
 
-data Computer' s = Computer' { dcpu' :: DCPU16
+data Computer' s = Computer' { dcpu' :: DCPU Word16
                              , dmemory' :: ST s (Memory s) }
 
 memorySize :: Int
@@ -43,21 +44,22 @@ memorySize = 128
 -- newtype IOComputer' a = IOComputer' (StateT (Computer' RealWorld) IO a)
 --   deriving (Functor, Applicative, Monad, MonadIO)
 
-type IOComputer' a = StateT (Computer' RealWorld) IO a
+type IOComputer' = StateT (Computer' RealWorld) IO
 
-instance LSMachine (StateT (Computer' RealWorld) IO)  where
-  -- load :: Address -> IOComputer' Word16
+--instance LSMachine (StateT (Computer' RealWorld) IO)  where
+instance LSMachine IOComputer' where
+  load :: Address -> IOComputer' Word16
   load address = do
     computer <- get
     case address of
-      Reg r -> return $ loadCPU (dcpu' computer) r
+      Reg r -> return $ loadCPU r (dcpu' computer)
       Ram word -> lift . stToIO . loadMemory' word $ dmemory' computer
 
-  -- store :: Address -> Word16 -> IOComputer' ()
+  store :: Address -> Word16 -> IOComputer' ()
   store address word = do
     computer <- get
     case address of
-      Reg r -> put computer { dcpu' = storeCPU (dcpu' computer) r word }
+      Reg r -> put computer { dcpu' = storeCPU r word (dcpu' computer) }
       Ram addr -> put computer { dmemory' = storeMemory' addr word $ dmemory' computer }
 
 
@@ -68,7 +70,7 @@ instance LSMachine (StateT (Computer' RealWorld) IO)  where
 
 
 newComputer' :: Computer' RealWorld
-newComputer' = Computer' newCpu (newMemory memorySize)
+newComputer' = Computer' newDCPU16 (newMemory memorySize)
 
 
 runIOComputer' :: IOComputer' a -> Computer' RealWorld -> IO (a, Computer' RealWorld)
