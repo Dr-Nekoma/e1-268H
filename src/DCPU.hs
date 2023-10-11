@@ -1,19 +1,21 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE RankNTypes #-}
 
+
 module DCPU ( DCPU (..)
+            , DCPU16
+            , Register (..)
             , newDCPU16
             , loadCPU
             , storeCPU
-            , Register (..)
             ) where
 
-import Lens.Micro.TH
+import Lens.Micro.TH (makeLenses)
 import Lens.Micro
 import Lens.Micro.Extras (view)
 
-import GHC.Word (Word16 (..))
-import Data.Bits
+import GHC.Word (Word16)
+
 
 data DCPU a = DCPU { _regA  :: a
                    , _regB  :: a
@@ -30,7 +32,10 @@ data DCPU a = DCPU { _regA  :: a
 
 $(makeLenses ''DCPU)
 
-newDCPU16 :: DCPU Word16
+type DCPU16 = DCPU Word16
+
+
+newDCPU16 :: DCPU16
 newDCPU16 = DCPU { _regA  = 0
                  , _regB  = 0
                  , _regC  = 0
@@ -46,6 +51,7 @@ newDCPU16 = DCPU { _regA  = 0
 
 data Register = A | B | C | X | Y | Z | I | J | PC | SP | O
   deriving (Show, Eq, Enum, Bounded)
+
 
 loadCPU :: Register -> DCPU a -> a
 loadCPU reg = view $ regLens reg

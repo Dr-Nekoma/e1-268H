@@ -169,21 +169,3 @@ operandCycles _ = 0
 
 
 --  decodeInstruction :: Word16 -> Instruction
-
-
--- data Address
---     = Pc
---     | Sp
---     | O
---     | Cycles
---     | Register Register
---     | Ram Word16
---     deriving (Eq)
-
--- instance Show Address where
---     show Pc           = "Pc"
---     show Sp           = "Sp"
---     show O            = "O"
---     show Cycles       = "Cycles"
---     show (Register r) = show r
---     show (Ram r)      = "[" ++ show r ++ "]"
