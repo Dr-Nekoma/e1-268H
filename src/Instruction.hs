@@ -1,10 +1,24 @@
-module Instruction (
+module Instruction ( Instruction (..)
+                   , Operand (..)
+                   , decodeInstruction
+                   , encodeInstruction
                    ) where
 
 import Data.Word
 import Data.Bits
 
 import DCPU (Register)
+
+data Instruction a = BasicInstruction BasicOpcode a a
+                   | NonBasicInstruction NonBasicOpcode a
+                   | UnknownInstruction Word16
+  deriving (Eq)
+
+instance Show a => Show (Instruction a) where
+  show (BasicInstruction op a b) = unwords [show op, show a, show b]
+  show (NonBasicInstruction op a) = unwords [show op, show a]
+  show (UnknownInstruction w) = unwords ["Unknown instruction:", show w]
+
 
 data BasicOpcode = SET
                  | ADD
@@ -21,40 +35,31 @@ data BasicOpcode = SET
                  | IFN
                  | IFG
                  | IFB
-  deriving (Show, Eq, Enum)
+  deriving (Show, Eq, Bounded, Enum)
 
 data NonBasicOpcode = Reserved
                     | JSR
   deriving (Show, Eq, Enum)
 
-data Instruction a = BasicInstruction BasicOpcode a a
-                   | NonBasicInstruction NonBasicOpcode a
-                   | UnknownInstruction Word16
-  deriving (Eq)
-
-instance Show a => Show (Instruction a) where
-  show (BasicInstruction op a b) = unwords [show op, show a, show b]
-  show (NonBasicInstruction op a) = unwords [show op, show a]
-  show (UnknownInstruction w) = unwords ["Unknown instruction:", show w]
 
 decodeInstruction :: Word16 -> Instruction Operand
 decodeInstruction word = case opcode of
   -- Basic instructions
-  0x01 -> BasicInstruction SET a b
-  0x02 -> BasicInstruction ADD a b
-  0x03 -> BasicInstruction SUB a b
-  0x04 -> BasicInstruction MUL a b
-  0x05 -> BasicInstruction DIV a b
-  0x06 -> BasicInstruction MOD a b
-  0x07 -> BasicInstruction SHL a b
-  0x08 -> BasicInstruction SHR a b
-  0x09 -> BasicInstruction AND a b
-  0x0a -> BasicInstruction BOR a b
-  0x0b -> BasicInstruction XOR a b
-  0x0c -> BasicInstruction IFE a b
-  0x0d -> BasicInstruction IFN a b
-  0x0e -> BasicInstruction IFG a b
-  0x0f -> BasicInstruction IFB a b
+  0x1 -> BasicInstruction SET a b
+  0x2 -> BasicInstruction ADD a b
+  0x3 -> BasicInstruction SUB a b
+  0x4 -> BasicInstruction MUL a b
+  0x5 -> BasicInstruction DIV a b
+  0x6 -> BasicInstruction MOD a b
+  0x7 -> BasicInstruction SHL a b
+  0x8 -> BasicInstruction SHR a b
+  0x9 -> BasicInstruction AND a b
+  0xa -> BasicInstruction BOR a b
+  0xb -> BasicInstruction XOR a b
+  0xc -> BasicInstruction IFE a b
+  0xd -> BasicInstruction IFN a b
+  0xe -> BasicInstruction IFG a b
+  0xf -> BasicInstruction IFB a b
   -- Non-basic instructions
   0x00 -> case nonBasicOpcode of
     0x01 -> NonBasicInstruction JSR b
@@ -161,11 +166,8 @@ encodeOperand operand = case operand of
   where
     unreg = fromIntegral . fromEnum
 
-operandCycles :: Operand -> Int
-operandCycles (OpNextWordPlusRegisterPointer _) = 1
-operandCycles OpNextWordPointer = 1
-operandCycles OpNextWordLiteral = 1
-operandCycles _ = 0
-
-
---  decodeInstruction :: Word16 -> Instruction
+-- operandCycles :: Operand -> Int
+-- operandCycles (OpNextWordPlusRegisterPointer _) = 1
+-- operandCycles OpNextWordPointer = 1
+-- operandCycles OpNextWordLiteral = 1
+-- operandCycles _ = 0

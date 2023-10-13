@@ -1,20 +1,27 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Computer ( Computer
-                , memorySize
-                , newIOComputer
-                , runIOComputer
-                , newSTComputer
-                , runSTComputer
-                ) where
+module Computer
+  -- ( Computer
+  --               , memorySize
+  --               , newIOComputer
+  --               , runIOComputer
+  --               , newSTComputer
+  --               , runSTComputer
+  --               )
+where
 
 import Data.Word (Word16)
+import Data.Bits (shiftL)
+
 import Control.Monad.State (StateT, get, put, runStateT)
 import Control.Monad.ST (ST, RealWorld, stToIO)
 import Control.Monad.Trans (lift)
+import qualified Data.ByteString as B
 
 import DCPU
+import Instruction
 import Memory
 import LSMachine
 
@@ -24,6 +31,42 @@ data Computer s = Computer { _dcpu :: DCPU Word16
 
 memorySize :: Int
 memorySize = 128
+
+
+
+--- Computer operations ---
+
+fetch :: (LSMachine m) => m Word16
+fetch = do
+  pc <- load (Reg PC)
+  store (Reg PC) $ pc + 1
+  load (Ram pc)
+
+decode :: (LSMachine m) => m (Instruction Operand)
+decode = do
+  instr <- fetch
+  return . decodeInstruction $ instr
+
+-- exec :: (LSMachine m) => Instruction Operand -> m ()
+-- exec (BasicInstruction SET a b) = do
+
+
+-- ignores the last byte in case there is an odd number of input bytes
+loadProgram :: (LSMachine m) => B.ByteString -> m ()
+loadProgram bs = loop 0
+  where
+    len = B.length bs
+    loop !i
+      | i + 1 >= len = return ()
+      | otherwise = do
+          -- read two bytes as the memory word is 16 bit wide
+          let !byte1 = fromIntegral $ B.index bs i
+              !byte2 = fromIntegral $ B.index bs (i + 1)
+              !word  = (byte1 `shiftL` 8) + byte2
+              !addr  = fromIntegral $ i `div` 2
+          store (Ram addr) word
+          loop $ i + 2
+
 
 
 --- IO Computer ---
@@ -51,7 +94,6 @@ newIOComputer = Computer newDCPU16 (newMemory memorySize)
 
 runIOComputer :: IOComputer a -> Computer RealWorld -> IO (a, Computer RealWorld)
 runIOComputer = runStateT
-
 
 --- ST Computer ---
 
