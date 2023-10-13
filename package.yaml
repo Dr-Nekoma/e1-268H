@@ -22,6 +22,9 @@ description:         Please see the README on GitHub at <https://github.com/edil
 dependencies:
 - base >= 4.7 && < 5
 - vector >= 0.13 && < 0.14
+- bytestring >= 0.11.5 && < 0.11.6
+- text >= 2.0 && < 2.1
+- text-show >= 3.10.0 && < 3.11.0
 - mtl >= 2.2 && < 2.3
 - microlens >= 0.4.13 && < 0.4.14
 - microlens-th >= 0.4.3 && < 0.4.4
