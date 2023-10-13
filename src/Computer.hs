@@ -42,14 +42,47 @@ fetch = do
   store (Reg PC) $ pc + 1
   load (Ram pc)
 
-decode :: (LSMachine m) => m (Instruction Operand)
-decode = do
-  instr <- fetch
-  return . decodeInstruction $ instr
+decode :: (LSMachine m) =>  Word16 -> m (Instruction Operand)
+decode word = return $ decodeInstruction word
+
+data Value = Literal Word16
+           | Address Address
+           deriving Show
+
+loadOperand :: (LSMachine m) => Operand -> m Value
+loadOperand (OpRegister reg) = return . Address . Reg $ reg
+loadOperand (OpRegisterPointer reg) = do
+  regContent <- load (Reg reg)
+  return . Address . Ram $ regContent
+loadOperand (OpNextWordPlusRegisterPointer reg) = do
+  next <- fetch
+  regContent <- load (Reg reg)
+  return . Address . Ram $ next + regContent
+loadOperand OpPop = do
+  sp <- load (Reg SP)
+  store (Reg SP) (sp + 1)
+  return . Address . Ram $ sp
+loadOperand OpPeek = do
+  sp <- load (Reg SP)
+  return . Address . Ram $ sp
+loadOperand OpPush = do
+  spDec <- subtract 1 <$> load (Reg SP)
+  store (Reg SP) spDec
+  return . Address . Ram $ spDec
+loadOperand OpSp = return . Address . Reg $ SP
+loadOperand OpPc = return . Address . Reg $ PC
+loadOperand OpO = return . Address . Reg $ O
+loadOperand OpNextWordPointer = do
+  next <- fetch
+  return . Address . Ram $ next
+loadOperand OpNextWordLiteral = Literal <$> fetch
+loadOperand (OpLiteral word) = return $ Literal word
 
 -- exec :: (LSMachine m) => Instruction Operand -> m ()
 -- exec (BasicInstruction SET a b) = do
 
+-- loadProgramFromFile :: (LSMachine m) => FilePath -> m ()
+-- loadProgramFromFile = loadProgram . B.fromFilePath
 
 -- ignores the last byte in case there is an odd number of input bytes
 loadProgram :: (LSMachine m) => B.ByteString -> m ()
