@@ -1,5 +1,7 @@
 module Instruction ( Instruction (..)
                    , Operand (..)
+                   , BasicOpcode (..)
+                   , NonBasicOpcode (..)
                    , decodeInstruction
                    , encodeInstruction
                    ) where

@@ -13,7 +13,7 @@ module Computer
 where
 
 import Data.Word (Word16)
-import Data.Bits (shiftL)
+import Data.Bits (shiftL, shiftR, (.&.))
 
 import Control.Monad.State (StateT, get, put, runStateT)
 import Control.Monad.ST (ST, RealWorld, stToIO)
@@ -45,9 +45,121 @@ fetch = do
 decode :: (LSMachine m) =>  Word16 -> m (Instruction Operand)
 decode word = return $ decodeInstruction word
 
+execute :: (LSMachine m) => Instruction Value -> m ()
+-- SET a, b - sets a to b
+execute (BasicInstruction SET a b) = loadValue b >>= storeValue a
+-- ADD a, b - sets a to a+b, sets O to 0x0001 if there's an overflow, 0x0 otherwise
+execute (BasicInstruction ADD a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  storeValue a (x + y) -- 16 bit (+)
+  -- overflow if x + y exceeds 16 bits
+  let (x', y') = (fromIntegral x, fromIntegral y)
+      overflow = x' + y' > (0xffff :: Int)
+  store (Reg O) $ if overflow then 0x0001 else 0x0000
+-- SUB a, b - sets a to a-b, sets O to 0xffff if there's an underflow, 0x0 otherwise
+execute (BasicInstruction SUB a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  storeValue a (x - y)
+  -- underflow if x - y goes negative
+  let (x', y') = (fromIntegral x, fromIntegral y)
+      underflow = x' - y' < (0x0000 :: Int)
+  store (Reg O) $ if underflow then 0xffff else 0x0000
+-- MUL a, b - sets a to a*b, sets O to ((a*b)>>16)&0xffff
+execute (BasicInstruction MUL a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  storeValue a (x * y)
+  let (x', y') = (fromIntegral x, fromIntegral y)
+      -- extend precision
+      overflow = ((x' * y') `shiftR` 16) .&. 0xffff :: Word
+  -- then truncate
+  store (Reg O) $ fromIntegral overflow
+-- DIV a, b - sets a to a/b, sets O to ((a<<16)/b)&0xffff. if b==0, sets a and O to 0 instead.
+execute (BasicInstruction DIV a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  if y == 0
+    then do
+      storeValue a 0x0000
+      store (Reg O) 0x0000
+    else do
+      storeValue a (x `div` y)
+      let (x', y') = (fromIntegral x, fromIntegral y)
+          -- extend precision
+          overflow = ((x' `shiftL` 16) `div` y') .&. 0xffff :: Word
+      -- then truncate
+      store (Reg O) $ fromIntegral overflow
+-- MOD a, b - sets a to a%b. if b==0, sets a to 0 instead.
+execute (BasicInstruction MOD a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  if y == 0
+    then storeValue a 0x0000
+    else storeValue a (x `mod` y)
+-- SHL a, b - sets a to a<<b, sets O to ((a<<b)>>16)&0xffff
+execute (BasicInstruction SHL a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  let (x', y') = (fromIntegral x, fromIntegral y)
+      -- extend precision
+      overflow = ((x' `shiftL` y') `shiftR` 16) .&. 0xfff :: Word
+  storeValue a $ x `shiftL` y'
+  -- then truncate
+  store (Reg O) $ fromIntegral overflow
+-- SHR a, b - sets a to a>>b, sets O to ((a<<16)>>b)&0xffff
+execute (BasicInstruction SHR a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  let (x', y') = (fromIntegral x, fromIntegral y)
+      -- extend precision
+      overflow = ((x' `shiftL` 16) `shiftR` y') .&. 0xfff :: Word
+  storeValue a $ x `shiftR` y'
+  -- then truncate
+  store (Reg O) $ fromIntegral overflow
+-- AND a, b - sets a to a&b
+execute (BasicInstruction AND a b) = return ()
+-- BOR a, b - sets a to a|b
+execute (BasicInstruction BOR a b) = return ()
+-- XOR a, b - sets a to a^b
+execute (BasicInstruction XOR a b) = return ()
+-- IFE a, b - performs next instruction only if a==b
+execute (BasicInstruction IFE a b) = return ()
+-- IFN a, b - performs next instruction only if a!=b
+execute (BasicInstruction IFN a b) = return ()
+-- IFG a, b - performs next instruction only if a>b
+execute (BasicInstruction IFG a b) = return ()
+-- IFB a, b - performs next instruction only if (a&b)!=0
+execute (BasicInstruction IFB a b) = return ()
+-- JSR a - pushes the address of the next instruction to the stack, then sets PC to a
+execute (NonBasicInstruction JSR a) = return ()
+
+
+
 data Value = Literal Word16
            | Address Address
            deriving Show
+
+loadValue :: (LSMachine m) => Value -> m Word16
+loadValue (Literal word) = return word
+loadValue (Address addr) = load addr
+
+storeValue :: (LSMachine m) => Value -> Word16 -> m ()
+-- * If any instruction tries to assign a literal value, the assignment fails silently.
+storeValue (Literal _) _ = return ()
+--Other than that, the instruction behaves as normal.
+storeValue (Address addr) word = store addr word
+
+loadOperands :: (LSMachine m) => Instruction Operand -> m (Instruction Value)
+loadOperands (BasicInstruction op a b) = do
+  aa <- loadOperand a
+  bb <- loadOperand b
+  return $ BasicInstruction op aa bb
+loadOperands (NonBasicInstruction op a) = do
+  aa <- loadOperand a
+  return $ NonBasicInstruction op aa
+loadOperands (UnknownInstruction w) = return $ UnknownInstruction w
 
 loadOperand :: (LSMachine m) => Operand -> m Value
 loadOperand (OpRegister reg) = return . Address . Reg $ reg
