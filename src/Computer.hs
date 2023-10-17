@@ -13,8 +13,9 @@ module Computer
 where
 
 import Data.Word (Word16)
-import Data.Bits (shiftL, shiftR, (.&.))
+import Data.Bits (shiftL, shiftR, (.&.), (.|.), xor)
 
+import Control.Monad (unless, void)
 import Control.Monad.State (StateT, get, put, runStateT)
 import Control.Monad.ST (ST, RealWorld, stToIO)
 import Control.Monad.Trans (lift)
@@ -119,22 +120,49 @@ execute (BasicInstruction SHR a b) = do
   -- then truncate
   store (Reg O) $ fromIntegral overflow
 -- AND a, b - sets a to a&b
-execute (BasicInstruction AND a b) = return ()
+execute (BasicInstruction AND a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  storeValue a $ x .&. y
 -- BOR a, b - sets a to a|b
-execute (BasicInstruction BOR a b) = return ()
+execute (BasicInstruction BOR a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  storeValue a $ x .|. y
 -- XOR a, b - sets a to a^b
-execute (BasicInstruction XOR a b) = return ()
+execute (BasicInstruction XOR a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  storeValue a $ x `xor` y
 -- IFE a, b - performs next instruction only if a==b
-execute (BasicInstruction IFE a b) = return ()
+execute (BasicInstruction IFE a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  unless (x == y) $ void fetch
 -- IFN a, b - performs next instruction only if a!=b
-execute (BasicInstruction IFN a b) = return ()
+execute (BasicInstruction IFN a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  unless (x /= y) $ void fetch
 -- IFG a, b - performs next instruction only if a>b
-execute (BasicInstruction IFG a b) = return ()
+execute (BasicInstruction IFG a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  unless (x > y) $ void fetch
 -- IFB a, b - performs next instruction only if (a&b)!=0
-execute (BasicInstruction IFB a b) = return ()
+execute (BasicInstruction IFB a b) = do
+  x <- loadValue a
+  y <- loadValue b
+  unless (x .&. y /= 0) $ void fetch
 -- JSR a - pushes the address of the next instruction to the stack, then sets PC to a
-execute (NonBasicInstruction JSR a) = return ()
-
+execute (NonBasicInstruction JSR a) = do
+  pc <- load (Reg PC)
+  addr <- loadOperand OpPush
+  execute (BasicInstruction SET addr (Literal pc))
+  x <- loadValue a
+  store (Reg PC) x
+-- Reserved instruction space: fails silently
+execute _ = return ()
 
 
 data Value = Literal Word16
