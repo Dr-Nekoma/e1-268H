@@ -1,7 +1,7 @@
 --{-# LANGUAGE OverloadedStrings #-}
 
-module Utils ( showWord16
-             ) where
+module CPU.Utils ( showWord16
+                 ) where
 
 import Data.Word
 import Data.Char (intToDigit)
@@ -20,4 +20,4 @@ showWord16 word = "0x" <> hex
     hex = do
       i <- [3,2,1,0]
       let k = word `shiftR` (4*i) .&. 0x000f
-      showIntAtBase 16 intToDigit k ""
+      showHex k ""

@@ -26,13 +26,13 @@ source-repository head
 library
   exposed-modules:
       Computer
+      CPU.Utils
       DCPU
       Instruction
       Lib
       Log
       LSMachine
       Memory
-      Utils
   other-modules:
       Paths_dcpu16_emulator_hs
   hs-source-dirs:
