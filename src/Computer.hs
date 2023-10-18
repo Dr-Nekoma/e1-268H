@@ -2,14 +2,13 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Computer
-  -- ( Computer
-  --               , memorySize
-  --               , newIOComputer
-  --               , runIOComputer
-  --               , newSTComputer
-  --               , runSTComputer
-  --               )
+module Computer ( Computer
+                , memorySize
+                , newIOComputer
+                , runIOComputer
+                , newSTComputer
+                , runSTComputer
+                )
 where
 
 import Data.Word (Word16)
@@ -43,8 +42,8 @@ fetch = do
   store (Reg PC) $ pc + 1
   load (Ram pc)
 
-decode :: (LSMachine m) =>  Word16 -> m (Instruction Operand)
-decode word = return $ decodeInstruction word
+decode :: (LSMachine m) =>  Word16 -> m (Instruction Value)
+decode = loadOperands . decodeInstruction
 
 execute :: (LSMachine m) => Instruction Value -> m ()
 -- SET a, b - sets a to b
