@@ -8,6 +8,8 @@ module Computer ( Computer
                 , runIOComputer
                 , newSTComputer
                 , runSTComputer
+                , loadProgram
+                , execInstruction
                 )
 where
 
@@ -32,9 +34,15 @@ data Computer s = Computer { _dcpu :: DCPU Word16
 memorySize :: Int
 memorySize = 128
 
-
+-- example program
+-- program = B.pack [0x7d, 0xe1, 0x00, 0x78, 0x56, 0x78, 0x7d, 0xe1, 0x00, 0x79, 0x12, 0x34, 0x7d, 0xe2, 0x00, 0x78, 0xcc, 0xdd, 0x75, 0xe2, 0x00, 0x79, 0x7d, 0xe2, 0x00, 0x79, 0xaa, 0xbb]
+-- simulate program
+-- runIOComputer (loadProgram program >> dumpMachine >> replicateM_ 5 execInstruction >> dumpMachine) newIOComputer
 
 --- Computer operations ---
+
+execInstruction :: (LSMachine m) => m ()
+execInstruction = fetch >>= decode >>= execute
 
 fetch :: (LSMachine m) => m Word16
 fetch = do
