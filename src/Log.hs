@@ -1,25 +1,35 @@
 module Log ( registers
            , ram
+           , dumpMachine
            ) where
 
-import Data.List (intercalate)
-import Control.Monad (forM)
+import Data.List (intersperse)
 
+import DCPU (Register(..))
 import LSMachine
 import Computer
-import Utils
+import CPU.Utils
 
 registers :: LSMachine m => m String
 registers = do
-  regs <- forM [minBound .. maxBound] $ \name -> do
-    val <- load (Reg name)
-    return (name, val)
-  return $ intercalate ", " $
-    [show name <> ": " <> showWord16 val | (name, val) <- regs]
+  dump [[PC, A, X, I], [SP, B, Y, J], [O, C, Z]]
+  where
+    showReg reg = do
+      regValue <- load $ Reg reg
+      return $ mconcat [show reg, ": ", showWord16 regValue]
+
+    line regs = mconcat . intersperse "\t" <$> traverse showReg regs
+    dump rows = mconcat . intersperse "\n" <$> traverse line rows
 
 ram :: LSMachine m => m String
 ram = unlines <$> mapM line [(x * 8, x * 8 + 7) | x <- [0 .. fromIntegral $ (memorySize - 1) `div` 8]]
   where
     line (lo, up) = do
         vs <- mapM (load . Ram) [lo .. up]
-        return $ show lo ++ ":\t " ++ unwords (showWord16 <$> vs)
+        return $ showWord16 lo ++ ":\t " ++ unwords (showWord16 <$> vs)
+
+dumpMachine :: LSMachine m => m String
+dumpMachine = do
+  regs <- registers
+  memo <- ram
+  return $ "---\n" <> regs <> "\n" <> memo <> "---\n"
