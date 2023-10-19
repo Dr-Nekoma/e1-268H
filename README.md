@@ -8,7 +8,7 @@ Implementation of Notch's [dcpu-16](https://web.archive.org/web/20120509184912/h
 - [ ] Command line interface
 - [ ] Test suite
 - [ ] Assembler
-- [ ] Debugger interface (tui, breakpoints, inspect/change memory and regisgters, disassemble, etc)
+- [ ] Debugger interface (tui, breakpoints, inspect/change memory and registers, disassemble, etc)
 - [ ] Peripherals (video, keyboard, serial interface, etc)
 - [ ] Cycle accurate simulation?
 
