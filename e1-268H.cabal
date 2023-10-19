@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           dcpu16-emulator-hs
+name:           e1-268H
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/edilmedeiros/dcpu16-emulator-hs#readme>
 homepage:       https://github.com/edilmedeiros/dcpu16-emulator-hs#readme
@@ -34,7 +34,7 @@ library
       LSMachine
       Memory
   other-modules:
-      Paths_dcpu16_emulator_hs
+      Paths_e1_268H
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -49,17 +49,17 @@ library
     , vector ==0.13.*
   default-language: Haskell2010
 
-executable dcpu16
+executable e1-268H
   main-is: Main.hs
   other-modules:
-      Paths_dcpu16_emulator_hs
+      Paths_e1_268H
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , bytestring ==0.11.5.*
-    , dcpu16-emulator-hs
+    , e1-268H
     , microlens ==0.4.13.*
     , microlens-th ==0.4.3.*
     , mtl ==2.2.*
@@ -68,18 +68,18 @@ executable dcpu16
     , vector ==0.13.*
   default-language: Haskell2010
 
-test-suite dcpu16-test
+test-suite e1-268H-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_dcpu16_emulator_hs
+      Paths_e1_268H
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , bytestring ==0.11.5.*
-    , dcpu16-emulator-hs
+    , e1-268H
     , microlens ==0.4.13.*
     , microlens-th ==0.4.3.*
     , mtl ==2.2.*

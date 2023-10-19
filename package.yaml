@@ -1,4 +1,4 @@
-name:                dcpu16-emulator-hs
+name:                e1-268H
 version:             0.1.0.0
 github:              "edilmedeiros/dcpu16-emulator-hs"
 license:             BSD3
@@ -46,7 +46,7 @@ library:
   source-dirs: src
 
 executables:
-  dcpu16:
+  e1-268H:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -54,10 +54,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - dcpu16-emulator-hs
+    - e1-268H
 
 tests:
-  dcpu16-test:
+  e1-268H-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -65,4 +65,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - dcpu16-emulator-hs
+    - e1-268H

@@ -1,4 +1,4 @@
-# dcpu16-emulator-hs
+# e1-268H
 
 Implementation of Notch's [dcpu-16](https://web.archive.org/web/20120509184912/http://0x10c.com/doc/dcpu-16.txt) CPU in Haskell.
 
@@ -10,6 +10,7 @@ Implementation of Notch's [dcpu-16](https://web.archive.org/web/20120509184912/h
 - [ ] Assembler
 - [ ] Debugger interface (tui, breakpoints, inspect/change memory and regisgters, disassemble, etc)
 - [ ] Peripherals (video, keyboard, serial interface, etc)
+- [ ] Cycle accurate simulation?
 
 ## Building
 
